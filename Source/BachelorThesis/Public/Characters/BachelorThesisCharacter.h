@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/AnimationInterface.h"
 #include "Logging/LogMacros.h"
 #include "BachelorThesisCharacter.generated.h"
 
@@ -18,12 +19,12 @@ class AGrid3DInventory;
 struct FInputActionValue;
 class UDataTable;
 
-#define ECC_InventoryItem ECC_GameTraceChannel1
+#define ECC_InventoryItem ECC_GameTraceChannel2
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ABachelorThesisCharacter : public ACharacter
+class ABachelorThesisCharacter : public ACharacter, public IAnimationInterface
 {
 	GENERATED_BODY()
 	
@@ -93,6 +94,14 @@ class ABachelorThesisCharacter : public ACharacter
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FName> QuestItemIDs;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* SitDownMontage;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* StandUpMontage;
+	
+	bool bIsSitting;
 
 	void InitializeInventories();
 	void InitializeQuestInventory();
@@ -109,6 +118,9 @@ public:
 	void BeginInteract();
 	void EndInteract();
 	void ResetInteract();
+	
+	void PlayAnimation(FText Text);
+	virtual void BeginAnimation(USkeletalMeshComponent* Animation, FVector Location) override;
 
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
@@ -118,7 +130,11 @@ public:
 	FORCEINLINE UListInventoryComponent* GetListInventory() const { return ListInventory; }
 	FORCEINLINE AMainHUD* GetMainHUD() const { return MainHUD; }
 	
+	UFUNCTION(BlueprintCallable)
+	bool IsSitting() const { return bIsSitting; }
+	
 	FORCEINLINE void SetIsInteracting(const bool NewState) { bIsInteracting = NewState; }
+	FORCEINLINE void SetIsSitting(const bool NewState) { bIsSitting = NewState; }
 
 protected:
 
